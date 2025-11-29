@@ -1,0 +1,154 @@
+import { useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { TripCard } from "../components/TripCard";
+import { Link } from "react-router-dom";
+import { Plus, Search, Filter, MapPin } from "lucide-react";
+
+export function Trips() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [maxBudget, setMaxBudget] = useState<number | undefined>();
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const trips = useQuery(api.trips.searchTrips, {
+    destination: searchTerm || undefined,
+    maxBudget,
+    interests: selectedInterests.length > 0 ? selectedInterests : undefined,
+  });
+
+  const allTrips = useQuery(api.trips.getAllTrips, { status: "open" });
+
+  const interests = [
+    "Adventure", "Culture", "Food", "Nature", "Photography", 
+    "Spiritual", "Beach", "Mountains", "History", "Wildlife"
+  ];
+
+  const handleInterestToggle = (interest: string) => {
+    setSelectedInterests(prev => 
+      prev.includes(interest) 
+        ? prev.filter(i => i !== interest)
+        : [...prev, interest]
+    );
+  };
+
+  const displayTrips = searchTerm || maxBudget || selectedInterests.length > 0 ? trips : allTrips;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Find Travel Buddies</h1>
+              <p className="text-gray-600 mt-1">Discover amazing trips and connect with fellow travelers</p>
+            </div>
+            <Link
+              to="/trips/create"
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Create Trip
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search and Filters */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search destinations..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Budget Filter */}
+            <div className="md:w-48">
+              <input
+                type="number"
+                placeholder="Max budget (₹)"
+                value={maxBudget || ""}
+                onChange={(e) => setMaxBudget(e.target.value ? Number(e.target.value) : undefined)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Filter Toggle */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Filters
+            </button>
+          </div>
+
+          {/* Interest Filters */}
+          {showFilters && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Interests</h3>
+              <div className="flex flex-wrap gap-2">
+                {interests.map((interest) => (
+                  <button
+                    key={interest}
+                    onClick={() => handleInterestToggle(interest)}
+                    className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                      selectedInterests.includes(interest)
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {interest}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Results */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">
+            {displayTrips?.length || 0} trips found
+          </h2>
+        </div>
+
+        {/* Trip Grid */}
+        {displayTrips && displayTrips.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayTrips.map((trip) => (
+              <TripCard key={trip._id} trip={trip} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No trips found</h3>
+            <p className="text-gray-600 mb-6">
+              {searchTerm || maxBudget || selectedInterests.length > 0
+                ? "Try adjusting your search criteria"
+                : "Be the first to create an amazing trip!"
+              }
+            </p>
+            <Link
+              to="/trips/create"
+              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Create First Trip
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
