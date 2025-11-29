@@ -1,4 +1,4 @@
-##🌍 Sahyaatra – Complete Travel Social Platform
+#🌍 Sahyaatra – Complete Travel Social Platform
 
 Sahyaatra is a modern AI-powered travel platform designed for exploring India through an interactive map, live weather insights, AI-based recommendations, budget planning, and day-wise trip planning.
 Built with React + Vite, TailwindCSS, and Convex backend, it combines smart AI features with clean UI and fast performance.
