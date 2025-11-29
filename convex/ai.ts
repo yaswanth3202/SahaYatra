@@ -3,7 +3,7 @@ import { v } from "convex/values";
 
 // Gemini API configuration (use ENV vars in production!)
 const GEMINI_API_KEY = "AIzaSyDkXPZPKh8emdk_9ccAL3r8G3_l06rrcg8";
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 // Unsplash API configuration
 const UNSPLASH_ACCESS_KEY = "VpcO2KyXiMrp42IyGhVkD9jFKCd_L4pDbgC_VCzcgoA";
@@ -60,9 +60,25 @@ export const generateItinerary = action({
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: { message: `HTTP ${response.status}: ${response.statusText}` } }));
+        console.error("API Error Response:", errorData);
+        throw new Error(errorData.error?.message || `API request failed with status ${response.status}`);
+      }
+
       const data = await response.json();
+      
+      // Check for API errors in response
+      if (data.error) {
+        console.error("Gemini API Error:", data.error);
+        throw new Error(data.error.message || "API returned an error");
+      }
+
       const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!content) throw new Error("No response from AI");
+      if (!content) {
+        console.error("Unexpected API response structure:", JSON.stringify(data, null, 2));
+        throw new Error("No response from AI - unexpected response format");
+      }
 
       try {
         let cleanContent = content.trim();
@@ -107,9 +123,40 @@ export const generateItinerary = action({
           generalTips: ["AI response received", "Please review the detailed itinerary", "Contact support if you need assistance"]
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI generation error:", error);
-      throw new Error("Failed to generate itinerary. Please try again.");
+      
+      // Provide a fallback itinerary instead of throwing an error
+      const daysCount = Math.ceil((new Date(args.endDate).getTime() - new Date(args.startDate).getTime()) / (1000 * 60 * 60 * 24)) || 3;
+      const costPerDay = Math.floor(args.budget / daysCount);
+      
+      return {
+        days: Array.from({ length: daysCount }, (_, index) => ({
+          day: index + 1,
+          title: index === 0 ? "Arrival and Initial Exploration" : index === daysCount - 1 ? "Departure Day" : `Day ${index + 1} Activities`,
+          activities: [
+            index === 0 ? "Arrive and check into accommodation" : `Explore ${args.destination}`,
+            `Visit local attractions in ${args.destination}`,
+            `Enjoy local cuisine and culture`,
+            index === daysCount - 1 ? "Check out and depart" : "Relax and explore more"
+          ],
+          estimatedCost: costPerDay,
+          tips: index === 0 
+            ? "Book your accommodation in advance and arrange airport transfer" 
+            : index === daysCount - 1 
+            ? "Ensure you have all your belongings and confirm departure time"
+            : "Carry cash for local markets and keep emergency contacts handy"
+        })),
+        totalEstimatedCost: args.budget,
+        generalTips: [
+          `Budget: ₹${args.budget} for ${args.travelers} travelers`,
+          `Interests: ${args.interests.join(", ")}`,
+          "Carry cash for local markets and small vendors",
+          "Book accommodations and transportation in advance",
+          "Respect local customs and traditions",
+          "Keep emergency contacts and important documents safe"
+        ]
+      };
     }
   },
 });
@@ -138,7 +185,19 @@ export const chatWithAI = action({
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: { message: `HTTP ${response.status}: ${response.statusText}` } }));
+        console.error("API Error Response:", errorData);
+        return "I'm experiencing some technical difficulties. Please try again later or use the platform's other features to plan your trip.";
+      }
+
       const data = await response.json();
+      
+      if (data.error) {
+        console.error("Gemini API Error:", data.error);
+        return "I'm experiencing some technical difficulties. Please try again later or use the platform's other features to plan your trip.";
+      }
+
       return data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't process your request. Please try again.";
     } catch (error) {
       console.error("AI chat error:", error);
@@ -180,9 +239,25 @@ export const getDestinationInfo = action({
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: { message: `HTTP ${response.status}: ${response.statusText}` } }));
+        console.error("API Error Response:", errorData);
+        throw new Error(errorData.error?.message || `API request failed with status ${response.status}`);
+      }
+
       const data = await response.json();
+      
+      // Check for API errors in response
+      if (data.error) {
+        console.error("Gemini API Error:", data.error);
+        throw new Error(data.error.message || "API returned an error");
+      }
+
       const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!content) throw new Error("No response from AI");
+      if (!content) {
+        console.error("Unexpected API response structure:", JSON.stringify(data, null, 2));
+        throw new Error("No response from AI - unexpected response format");
+      }
 
       try {
         return JSON.parse(content);
