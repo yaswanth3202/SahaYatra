@@ -1,9 +1,9 @@
-🌍 Sahyaatra – Complete Travel Social Platform
+##🌍 Sahyaatra – Complete Travel Social Platform
 
 Sahyaatra is a modern AI-powered travel platform designed for exploring India through an interactive map, live weather insights, AI-based recommendations, budget planning, and day-wise trip planning.
 Built with React + Vite, TailwindCSS, and Convex backend, it combines smart AI features with clean UI and fast performance.
 
-✨ Features
+##✨ Features
 🗺️ Interactive India Map
 
 Explore all Indian states visually through a colorful, responsive state map.
@@ -18,7 +18,7 @@ Weather details
 
 Travel suggestions
 
-🌤 Live Weather System
+##🌤 Live Weather System
 
 Shows temperature, humidity, wind speed, pressure, visibility, and UV index.
 
@@ -92,7 +92,7 @@ Uses merged_state_places.csv for state-wise travel locations
 
 Helps itinerary planner and AI chatbot retrieve correct place details
 
-🏛️ Tech Stack
+##🏛️ Tech Stack
 Frontend
 
 React
@@ -134,7 +134,7 @@ Docker
 Git
 
 ESLint + Prettier
-🔑 Authentication
+##🔑 Authentication
 
 Anonymous login using Convex Auth
 
@@ -142,7 +142,7 @@ Can be upgraded to Google/GitHub OAuth
 
 Secure backend routing via convex/router.ts
 
-🚀 Getting Started
+##🚀 Getting Started
 1️⃣ Clone the repo
 git clone[ https://github.com/your-username/sahyaatra.git](https://github.com/yaswanth3202/SahaYatra)
 cd sahyaatra
