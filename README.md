@@ -144,7 +144,7 @@ Secure backend routing via convex/router.ts
 
 🚀 Getting Started
 1️⃣ Clone the repo
-git clone https://github.com/your-username/sahyaatra.git
+git clone[ https://github.com/your-username/sahyaatra.git](https://github.com/yaswanth3202/SahaYatra)
 cd sahyaatra
 
 2️⃣ Install dependencies
